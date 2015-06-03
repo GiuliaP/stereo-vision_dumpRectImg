@@ -1,0 +1,37 @@
+
+<application>
+        
+<name>SFM Dumper</name>
+
+        <!-- Modules -->
+        
+	<module>
+                <name>yarpdatadumper</name>
+				<parameters> --name /dump/SFM/rect_left:o --dir /home/icub/tmp_giulia/dumping/SFM/rectleft --type image</parameters>
+				<node>icub-tesla</node>
+				<tag>dumperLeftRect</tag>
+        </module>
+		
+	<module>
+                <name>yarpdatadumper</name>
+				<parameters> --name /dump/SFM/rect_right:o --dir /home/icub/tmp_giulia/dumping/SFM/rectright --type image</parameters>
+				<node>icub-tesla</node>
+				<tag>dumperRightRect</tag>
+        </module>
+        
+        <!-- Connections -->
+
+	<connection>
+                <from>/SFM/rect_left:o</from>
+                <to>/dump/SFM/rect_left:o</to>
+                <protocol>mcast</protocol>
+        </connection>
+		
+		<connection>
+                <from>/SFM/rect_right:o</from>
+                <to>/dump/SFM/rect_right:o</to>
+                <protocol>mcast</protocol>
+        </connection>
+        
+</application>
+
