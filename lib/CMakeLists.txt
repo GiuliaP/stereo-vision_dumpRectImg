@@ -1,5 +1,5 @@
 # Copyright: (C) 2011 RobotCub Consortium
-# Author: Sean Ryan Fanello
+# Author: Sean Ryan Fanello, Giulia Pasquale
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 cmake_minimum_required(VERSION 2.6)
@@ -32,21 +32,38 @@ endif()
 # use sse3 instruction set
 set (CMAKE_CXX_FLAGS "-msse3")
 
+find_package(OpenMP)
+
+if(OPENMP_FOUND)
+
+  message("OPENMP FOUND")
+
+  set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+
+  set (LIBELAS_SRC_DIR elas_src_omp)
+
+elseif (OPENMP_NOTFOUND)
+
+  set (LIBELAS_SRC_DIR elas_src)
+    
+endif()
+
 set (folder_header_elas 
-                  elas_src/elas.h
-                  elas_src/descriptor.h
-                  elas_src/image.h
-                  elas_src/filter.h
-                  elas_src/timer.h
-                  elas_src/matrix.h
-                  elas_src/triangle.h)
+                  ${LIBELAS_SRC_DIR}/elas.h
+                  ${LIBELAS_SRC_DIR}/descriptor.h
+                  ${LIBELAS_SRC_DIR}/image.h
+                  ${LIBELAS_SRC_DIR}/filter.h
+                  ${LIBELAS_SRC_DIR}/timer.h
+                  ${LIBELAS_SRC_DIR}/matrix.h
+                  ${LIBELAS_SRC_DIR}/triangle.h)
 
 set (folder_source_elas
-                  elas_src/elas.cpp
-                  elas_src/descriptor.cpp
-                  elas_src/filter.cpp
-                  elas_src/matrix.cpp
-                  elas_src/triangle.cpp)
+                  ${LIBELAS_SRC_DIR}/elas.cpp
+                  ${LIBELAS_SRC_DIR}/descriptor.cpp
+                  ${LIBELAS_SRC_DIR}/filter.cpp
+                  ${LIBELAS_SRC_DIR}/matrix.cpp
+                  ${LIBELAS_SRC_DIR}/triangle.cpp)
 
 ####################################
 
@@ -83,7 +100,7 @@ if(USE_SIFT_GPU)
 endif()
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
-include_directories(${PROJECT_SOURCE_DIR}/elas_src)
+include_directories(${PROJECT_SOURCE_DIR}/${LIBELAS_SRC_DIR})
 
 source_group("Source Files" FILES ${folder_source})
 source_group("Header Files" FILES ${folder_header})
@@ -92,20 +109,27 @@ source_group("ELAS Source Files" FILES ${folder_source_elas})
 source_group("ELAS Header Files" FILES ${folder_header_elas})
 
 add_library(${PROJECTNAME} ${folder_source} ${folder_header} ${folder_source_elas} ${folder_header_elas})
+
 if(USE_SIFT_GPU)
     target_link_libraries(${PROJECTNAME} ${OpenCV_LIBRARIES} iKin icubmod ${YARP_LIBRARIES} ${SIFTGPU_LIBRARIES}  )
 else()
     target_link_libraries(${PROJECTNAME} ${OpenCV_LIBRARIES} iKin icubmod ${YARP_LIBRARIES})
 endif()
 
-if(USE_SIFT_GPU)
-icubcontrib_export_library(${PROJECTNAME} INTERNAL_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/elas_src
+if(OPENMP_FOUND)
+
+   target_link_libraries(${PROJECTNAME} ${OpenMP_C_FLAGS} ${OpenMP_CXX_FLAGS})
+
+endif()
+
+if (USE_SIFT_GPU)
+    icubcontrib_export_library(${PROJECTNAME} INTERNAL_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/${LIBELAS_SRC_DIR}
                                           EXTERNAL_INCLUDE_DIRS ${YARP_INCLUDE_DIRS} ${ICUB_INCLUDE_DIRS} ${OpenCV_LIBRARIES} ${SIFTGPU_INCLUDE_DIRS}
                                           DESTINATION include/iCub/${PROJECTNAME}
-                                          FILES ${folder_header} )
+                                          FILES ${folder_header})
 else()
-icubcontrib_export_library(${PROJECTNAME} INTERNAL_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/elas_src
+    icubcontrib_export_library(${PROJECTNAME} INTERNAL_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/${LIBELAS_SRC_DIR}
                                           EXTERNAL_INCLUDE_DIRS ${YARP_INCLUDE_DIRS} ${ICUB_INCLUDE_DIRS} ${OpenCV_LIBRARIES}
                                           DESTINATION include/iCub/${PROJECTNAME}
-                                          FILES ${folder_header} )
+                                          FILES ${folder_header})
 endif()
