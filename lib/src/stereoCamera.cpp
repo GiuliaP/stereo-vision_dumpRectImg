@@ -525,7 +525,7 @@ void StereoCamera::computeDisparity(bool best, int uniquenessRatio, int speckleW
         elaswrap->compute_disparity(img1r, img2r, disp, numberOfDisparities);
 
         map = disp * (255.0 / numberOfDisparities);
-        threshold(map, map, 0, 255.0, THRESH_TOZERO);
+        //threshold(map, map, 0, 255.0, THRESH_TOZERO);
 
     } else
     {

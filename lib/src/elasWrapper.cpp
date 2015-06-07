@@ -49,7 +49,7 @@ void elasWrapper::init_elas(string _s, double _io_scaling_factor, bool elas_subs
 
 	elas = new Elas(*param);
 
-    std::cout << "elas_setting " << s << std::endl;
+    std::cout << "elas_setting " << _s << std::endl;
     std::cout << "io_scaling_factor " <<  io_scaling_factor << std::endl;
     std::cout << "elas_subsampling " << param->subsampling << std::endl;
     std::cout << "add_corners " << param->add_corners << std::endl;
@@ -109,16 +109,9 @@ double elasWrapper::compute_disparity(cv::Mat &imL, cv::Mat &imR, cv::Mat &dispL
     param->disp_max = num_disparities - 1;
 
     Mat imR_scaled, imL_scaled;
+    resize(imR, imR_scaled, Size(), io_scaling_factor, io_scaling_factor);
+    resize(imL, imL_scaled, Size(), io_scaling_factor, io_scaling_factor);
 
-    if (io_scaling_factor!=1.0)
-    {
-        resize(imR, imR_scaled, Size(), io_scaling_factor, io_scaling_factor);
-        resize(imL, imL_scaled, Size(), io_scaling_factor, io_scaling_factor);
-    } else
-    {
-        imR_scaled = imR;
-        imL_scaled = imL;
-    }
     width = imL_scaled.cols;
     height = imL_scaled.rows;
 
@@ -151,7 +144,7 @@ double elasWrapper::compute_disparity(cv::Mat &imL, cv::Mat &imR, cv::Mat &dispL
 
 	dispL = Mat(height_disp_data, width_disp_data, CV_32FC1, dispL_data);
 
-    if (io_scaling_factor!=1.0)
+    if (io_scaling_factor!=1.0 || param->subsampling==true)
 	   resize(dispL, dispL, im_size);
 
 	return workEnd(start);
