@@ -2,7 +2,7 @@
 # Author: Sean Ryan Fanello, Giulia Pasquale
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8)
 set(PROJECTNAME stereoVision_dumpRectImg)
 project(${PROJECTNAME})
 
@@ -36,7 +36,7 @@ find_package(OpenMP)
 
 if(OPENMP_FOUND)
 
-  message("OPENMP FOUND")
+  message(STATUS "OPENMP FOUND")
 
   set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
   set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
@@ -111,9 +111,9 @@ source_group("ELAS Header Files" FILES ${folder_header_elas})
 add_library(${PROJECTNAME} ${folder_source} ${folder_header} ${folder_source_elas} ${folder_header_elas})
 
 if(USE_SIFT_GPU)
-    target_link_libraries(${PROJECTNAME} ${OpenCV_LIBRARIES} iKin icubmod ${YARP_LIBRARIES} ${SIFTGPU_LIBRARIES}  )
+    target_link_libraries(${PROJECTNAME} ${OpenCV_LIBRARIES} iKin ${YARP_LIBRARIES} ${SIFTGPU_LIBRARIES}  )
 else()
-    target_link_libraries(${PROJECTNAME} ${OpenCV_LIBRARIES} iKin icubmod ${YARP_LIBRARIES})
+    target_link_libraries(${PROJECTNAME} ${OpenCV_LIBRARIES} iKin ${YARP_LIBRARIES})
 endif()
 
 if(OPENMP_FOUND)

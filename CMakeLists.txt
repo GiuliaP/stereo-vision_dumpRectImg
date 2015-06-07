@@ -1,5 +1,5 @@
-# Copyright: (C) 2013 iCub Facility - Istituto Italiano di Tecnologia
-# Authors: Sean Fanello
+# Copyright: (C) 2015 iCub Facility - Istituto Italiano di Tecnologia
+# Authors: Sean Fanello, Giulia Pasquale
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 cmake_minimum_required(VERSION 2.8)

@@ -27,24 +27,25 @@ using namespace std;
 class elasWrapper {
 
 	int32_t width, height;
+	double io_scaling_factor;
+	
 	float *dispL_data, *dispR_data;
 	bool disp_data_allocated;
-
-public:
 
 	Elas::parameters *param;
 	Elas *elas;
 
-	elasWrapper();
+public:
 
 	int64 workBegin();
 	double workEnd(int64 work_begin);
 
-	void init_elas(string s, bool elas_subsampling);
+    elasWrapper();
+    
+	void init_elas(string _s, double disp_scaling_factor, bool elas_subsampling, bool add_corners, int ipol_gap_width);
+    void release_elas();
 
-	double compute_disparity(cv::Mat &imL, cv::Mat &imR, cv::Mat &dispL);
-
-	void release_elas();
+	double compute_disparity(cv::Mat &imL, cv::Mat &imR, cv::Mat &dispL, int num_disparities);
 
 };
 

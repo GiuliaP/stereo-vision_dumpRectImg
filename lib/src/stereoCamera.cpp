@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2011 Department of Robotics Brain and Cognitive Sciences - Istituto Italiano di Tecnologia
- * Authors: Vadim Tikhanoff
- * email:   vadim.tikhanoff@iit.it
+ * Authors: Vadim Tikhanoff, Giulia Pasquale
+ * email:   vadim.tikhanoff@iit.it giulia.pasquale@iit.it
  * website: www.robotcub.org
  * Permission is granted to copy, distribute, and/or modify this program
  * under the terms of the GNU General Public License, version 2 or any
@@ -17,6 +17,9 @@
  */
 
 #include "iCub/stereoVision/stereoCamera.h"
+#ifndef USING_GPU
+    #include <opencv2/nonfree/nonfree.hpp>
+#endif 
 
 Mat StereoCamera::buildRotTras(Mat &R, Mat &T) {
     Mat A = Mat::eye(4, 4, CV_64F);
@@ -51,30 +54,41 @@ const vector<Point2f>  StereoCamera::getMatchRight() {
     return this->InliersR;
 }
 
-StereoCamera::StereoCamera(yarp::os::ResourceFinder &rf, bool rectify, double _io_scaling_factor, bool _use_elas) {
-
-	Mat KL, KR, DistL, DistR, R, T;
-    loadStereoParameters(rf,KL,KR,DistL,DistR,R,T);
-    this->mutex= new Semaphore(1);
-    this->setIntrinsics(KL,KR,DistL,DistR);
-    this->setRotation(R,0);
-    this->setTranslation(T,0);
-
-    this->cameraChanged=true;
-    this->epipolarTh=0.01;
+StereoCamera::StereoCamera(bool rectify) {
+    this->mutex=new Semaphore(1);
     this->rectify=rectify;
-    buildUndistortRemap();
+    this->epipolarTh=0.01;
 
-    io_scaling_factor = _io_scaling_factor;
-    use_elas = _use_elas;
+#ifndef USING_GPU
+    cv::initModule_nonfree();
+#endif 
 
-    if (use_elas)
-        {
-        	elaswrap = new elasWrapper();
-        }
+    use_elas = false;
+
 }
 
-StereoCamera::StereoCamera(Camera Left, Camera Right,bool rectify, double _io_scaling_factor, bool _use_elas) {
+StereoCamera::StereoCamera(yarp::os::ResourceFinder &rf, bool rectify) {
+        Mat KL, KR, DistL, DistR, R, T;
+        loadStereoParameters(rf,KL,KR,DistL,DistR,R,T);
+        this->mutex= new Semaphore(1);
+        this->setIntrinsics(KL,KR,DistL,DistR);
+        this->setRotation(R,0);
+        this->setTranslation(T,0);
+
+        this->cameraChanged=true;
+        this->epipolarTh=0.01;
+        this->rectify=rectify;
+        buildUndistortRemap();
+
+    #ifndef USING_GPU
+        cv::initModule_nonfree();
+    #endif 
+
+    use_elas = false;
+
+}
+
+StereoCamera::StereoCamera(Camera Left, Camera Right,bool rectify) {
     this->Kleft=Left.getCameraMatrix();
     this->DistL=Left.getDistVector();
 
@@ -86,13 +100,32 @@ StereoCamera::StereoCamera(Camera Left, Camera Right,bool rectify, double _io_sc
     this->epipolarTh=0.01;
     buildUndistortRemap();
 
-    io_scaling_factor = _io_scaling_factor;
-    use_elas = _use_elas;
+#ifndef USING_GPU
+    cv::initModule_nonfree();
+#endif 
 
-    if (use_elas)
-    {
-    	elaswrap = new elasWrapper();
-    }
+    use_elas = false;
+
+}
+
+void StereoCamera::initELAS(string elas_setting, double disp_scaling_factor, bool elas_subsampling, bool add_corners, int ipol_gap_width) 
+{
+
+        use_elas = true;
+
+        elaswrap = new elasWrapper();
+
+        elaswrap->init_elas(elas_setting, disp_scaling_factor, elas_subsampling, add_corners, ipol_gap_width);
+
+}
+
+void StereoCamera::releaseELAS()
+{
+        elaswrap->release_elas();
+
+        delete elaswrap;
+
+        use_elas = false;
 }
 
 void StereoCamera::setImages(IplImage * left, IplImage * right) {
@@ -439,7 +472,6 @@ void StereoCamera::computeDisparity(bool best, int uniquenessRatio, int speckleW
                                     int speckleRange, int numberOfDisparities, int SADWindowSize,
                                     int minDisparity, int preFilterCap, int disp12MaxDiff)
 {
-
 	if (this->Kleft.empty() || this->DistL.empty() || this->Kright.empty() || this->DistR.empty())
     {
         cout <<" Cameras are not calibrated! Run the Calibration first!" << endl;
@@ -454,20 +486,12 @@ void StereoCamera::computeDisparity(bool best, int uniquenessRatio, int speckleW
 
     Size img_size=this->imleft.size();
 
-    int64 startt, endt;
-
     if (cameraChanged)
     {
         mutex->wait();
-
-	startt = elaswrap->workBegin();
-
         stereoRectify(this->Kleft, this->DistL, this->Kright, this->DistR, img_size,
                       this->R, this->T, this->RLrect, this->RRrect, this->PLrect,
                       this->PRrect, this->Q, -1);
-
-	endt = elaswrap->workEnd(startt);
-	cout << "stereoRectify: " << endt << endl;
 
         if (!rectify)
         {
@@ -481,40 +505,27 @@ void StereoCamera::computeDisparity(bool best, int uniquenessRatio, int speckleW
 
     if (cameraChanged)
     {
-
-	startt = elaswrap->workBegin();
-
         initUndistortRectifyMap(this->Kleft, this->DistL, this->RLrect, this->PLrect,
                                 img_size, CV_32FC1, this->map11, this->map12);
         initUndistortRectifyMap(this->Kright,  this->DistR, this->RRrect, this->PRrect,
                                 img_size, CV_32FC1, this->map21, this->map22);
-
-	endt = elaswrap->workEnd(startt);
-	cout << "initUndistortRectifyMap: " << endt << endl;
     }
     
     Mat img1r, img2r;
     remap(this->imleft, img1r, this->map11, this->map12, cv::INTER_LINEAR);
     remap(this->imright, img2r, this->map21,this->map22, cv::INTER_LINEAR);
+
     imgLeftRect = img1r;
     imgRightRect = img2r;
-  
+
     Mat disp,disp8,map,dispTemp;
-    
-    Size imgr_size = img1r.size();
-    resize(img1r, img1r, Size(), io_scaling_factor, io_scaling_factor);
-    resize(img2r, img2r, Size(), io_scaling_factor, io_scaling_factor);
 
     if (use_elas)
     {
-    	double elas_time = elaswrap->compute_disparity(img1r, img2r, disp);
+    	elaswrap->compute_disparity(img1r, img2r, disp, numberOfDisparities);
 
-    	disp = disp * (255.0 / (elaswrap->param->disp_max+1));
-    	threshold(disp, disp, 0, 255.0, THRESH_TOZERO);
-
-        resize(disp, map, imgr_size);
-
-        cout << "compute_disparity: " << elas_time << endl; 
+        map = disp * (255.0 / numberOfDisparities);
+        threshold(map, map, 0, 255.0, THRESH_TOZERO);
 
     } else
     {
@@ -537,8 +548,6 @@ void StereoCamera::computeDisparity(bool best, int uniquenessRatio, int speckleW
         disp.convertTo(map, CV_32FC1, 1.0,0.0);
         map.convertTo(map,CV_32FC1,255/(numberOfDisparities*16.));
         //normalize(map,map, 0, 255, cv::NORM_MINMAX, CV_8UC1);
-
-        resize(map, map, imgr_size);
 
     }
     
@@ -641,6 +650,9 @@ Mat StereoCamera::findMatch(bool visualize, double displacement, double radius)
     Ptr<cv::FeatureDetector> detector=cv::FeatureDetector::create("SIFT");
     Ptr<cv::DescriptorExtractor> descriptorExtractor=cv::DescriptorExtractor::create("SIFT");
     cv::BFMatcher descriptorMatcher;
+
+    yAssert(detector!=NULL);
+    yAssert(descriptorExtractor!=NULL);
 
     detector->detect(grayleft,keypoints1);
     descriptorExtractor->compute(grayleft,keypoints1,descriptors1);

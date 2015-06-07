@@ -1,5 +1,5 @@
 # Copyright: 2010 RobotCub Consortium
-# Author: Sean Ryan Fanello
+# Author: Sean Ryan Fanello, Giulia Pasquale
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 set(PROJECTNAME SFM_dumpRectImg)
@@ -23,7 +23,8 @@ source_group("Source Files" FILES ${source})
 source_group("Header Files" FILES ${header})
 
 add_executable(${PROJECTNAME} ${source} ${header})
-target_link_libraries(${PROJECTNAME} stereoVision_dumpRectImg iKin icubmod ${YARP_LIBRARIES} ${OpenCV_LIBRARIES})
+
+target_link_libraries(${PROJECTNAME} stereoVision_dumpRectImg iKin ${YARP_LIBRARIES} ${OpenCV_LIBRARIES})
 
 if(USE_SIFT_GPU)
 	target_link_libraries(${PROJECTNAME} ${SIFTGPU_LIBRARIES})

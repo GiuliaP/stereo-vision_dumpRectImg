@@ -1,7 +1,7 @@
 /* 
- * Copyright (C) 2013 RobotCub Consortium
- * Author: Sean Ryan Fanello
- * email:   sean.fanello@iit.it
+ * Copyright (C) 2015 RobotCub Consortium
+ * Author: Sean Ryan Fanello, Giulia Pasquale
+ * email:   sean.fanello@iit.it giulia.pasquale@iit.it
  * website: www.robotcub.org
  * Permission is granted to copy, distribute, and/or modify this program
  * under the terms of the GNU General Public License, version 2 or any
@@ -37,10 +37,8 @@ bool SFM::configure(ResourceFinder &rf)
     string outDispName=rf.check("outDispPort",Value("/disp:o")).asString().c_str();
     string outMatchName=rf.check("outMatchPort",Value("/match:o")).asString().c_str();
 
-    /////////////////////////////////////////////////////////////////////////////
     string outLeftRectImgPortName=rf.check("outLeftRectImgPort",Value("/rect_left:o")).asString().c_str();
     string outRightRectImgPortName=rf.check("outRightRectImgPort",Value("/rect_right:o")).asString().c_str();
-    /////////////////////////////////////////////////////////////////////////////
 
     ResourceFinder localCalibration;
     localCalibration.setContext("cameraCalibration");
@@ -53,10 +51,8 @@ bool SFM::configure(ResourceFinder &rf)
     outMatchName=sname+outMatchName;
     outDispName=sname+outDispName;
     
-    /////////////////////////////////////////////////////////////////////////////
     outLeftRectImgPortName=sname+outLeftRectImgPortName;
     outRightRectImgPortName=sname+outRightRectImgPortName;
-    /////////////////////////////////////////////////////////////////////////////
 
     string rpc_name=sname+"/rpc";
     string world_name=sname+rf.check("outWorldPort",Value("/world:o")).asString().c_str();
@@ -72,34 +68,37 @@ bool SFM::configure(ResourceFinder &rf)
     worldPort.open(world_name.c_str());
     attach(handlerPort);
 
-    /////////////////////////////////////////////////////////////////////////////
     outLeftRectImgPort.open(outLeftRectImgPortName.c_str());
     outRightRectImgPort.open(outRightRectImgPortName.c_str());
-    /////////////////////////////////////////////////////////////////////////////
 
-    double io_scaling_factor = rf.check("io_scaling_factor",Value(1.0)).asDouble();
+    this->stereo = new StereoCamera(true);
 
-    bool use_elas = true;
+    disp_library = rf.check("disp_library", Value("elas")).asString().c_str();
 
-    bool rectify = true;
-
-    this->stereo = new StereoCamera(rectify, io_scaling_factor, use_elas);
-
-    if (this->stereo->use_elas)
+    if (disp_library=="elas")
     {
-    	string elas_setting = rf.check("elas_setting",Value("MIDDLEBURY")).asString().c_str();
+        
+        string elas_setting = rf.check("elas_setting",Value("MIDDLEBURY")).asString().c_str();
 
-    	bool elas_subsampling = false;
-    	if (rf.check("elas_subsampling"))
+        double disp_scaling_factor = rf.check("disp_scaling_factor",Value(1.0)).asDouble();
+
+        bool elas_subsampling = false;
+        if (rf.check("elas_subsampling"))
         {
-    		elas_subsampling = true;
-    	}
+            elas_subsampling = true;
+        }
 
-        this->stereo->elaswrap->init_elas(elas_setting, elas_subsampling);
+        bool add_corners = false;
+        if (rf.check("add_corners"))
+        {
+            add_corners = true;
+        }
+
+        int ipol_gap_width = rf.check("ipol_gap_width",Value(40)).asInt();
+
+        stereo->initELAS(elas_setting, disp_scaling_factor, elas_subsampling, add_corners, ipol_gap_width);
+
     }
-
-    std::cout << "io_scaling_factor " << io_scaling_factor << std::endl;
-    std::cout << "elas_subsampling " << elsa_subsampling << std::endl;
 
     Mat KL, KR, DistL, DistR;
     
@@ -255,25 +254,14 @@ void SFM::updateViaGazeCtrl(const bool update)
 bool SFM::interruptModule()
 {
     leftImgPort.interrupt();
-    //leftImgPort.close();
-
     rightImgPort.interrupt();
-    //rightImgPort.close();
-
-    //outDisp.close();
     outDisp.interrupt();
-    
     handlerPort.interrupt();
-
-    //outMatch.close();
     outMatch.interrupt();
-
     worldPort.interrupt();
 
-    /////////////////////////////////////////////////////////////////////////////
     outLeftRectImgPort.interrupt();
     outRightRectImgPort.interrupt();
-    /////////////////////////////////////////////////////////////////////////////
 
     return true;
 }
@@ -282,23 +270,11 @@ bool SFM::interruptModule()
 /******************************************************************************/
 bool SFM::close()
 {
-    //leftImgPort.interrupt();
     leftImgPort.close();
-
-    //rightImgPort.interrupt();
     rightImgPort.close();
-
-    //outDisp.interrupt();
     outDisp.close();
-    
-
-    //outMatch.interrupt();
     outMatch.close();
-    
-    //handlerPort.interrupt();
     handlerPort.close();
-    
-    //worldPort.interrupt();
     worldPort.close();
 
     if (output_match!=NULL)
@@ -307,10 +283,11 @@ bool SFM::close()
     if (outputD!=NULL)
         cvReleaseImage(&outputD);
 
-    /////////////////////////////////////////////////////////////////////////////
     outLeftRectImgPort.close();
     outRightRectImgPort.close();
-    /////////////////////////////////////////////////////////////////////////////
+
+    if (disp_library=="elas")
+        stereo->releaseELAS();
 
     headCtrl.close();
     gazeCtrl.close();
@@ -329,9 +306,9 @@ bool SFM::updateModule()
     ImageOf<PixelRgb> *yarp_imgL=leftImgPort.read(true);
     ImageOf<PixelRgb> *yarp_imgR=rightImgPort.read(true);
 
-    Stamp stamp;
-    leftImgPort.getEnvelope(stamp);
-
+    Stamp stamp_left, stamp_right;
+    leftImgPort.getEnvelope(stamp_left);
+    rightImgPort.getEnvelope(stamp_right);
 
     if ((yarp_imgL==NULL) || (yarp_imgR==NULL))
         return true;
@@ -418,7 +395,7 @@ bool SFM::updateModule()
 
     	rectLeft.copyTo( cv::Mat( (IplImage*)rectLeftImage.getIplImage() ) );
 
-    	outLeftRectImgPort.setEnvelope(stamp);
+    	outLeftRectImgPort.setEnvelope(stamp_left);
     	outLeftRectImgPort.write();
     }
 
@@ -431,7 +408,7 @@ bool SFM::updateModule()
 
     	rectRight.copyTo( cv::Mat( (IplImage*)rectRightImage.getIplImage() ) );
 
-    	outRightRectImgPort.setEnvelope(stamp);
+    	outRightRectImgPort.setEnvelope(stamp_right);
     	outRightRectImgPort.write();
     }
 
@@ -1294,8 +1271,6 @@ int main(int argc, char *argv[])
 
     if (!yarp.checkNetwork())
         return -1;
-
-    YARP_REGISTER_DEVICES(icubmod)
 
     ResourceFinder rf;
     rf.setVerbose(true);
