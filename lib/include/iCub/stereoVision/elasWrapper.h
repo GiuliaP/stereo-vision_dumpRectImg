@@ -26,11 +26,7 @@ using namespace std;
 
 class elasWrapper {
 
-	int32_t width, height;
 	double io_scaling_factor;
-	
-	float *dispL_data, *dispR_data;
-	bool disp_data_allocated;
 
 	Elas::parameters *param;
 	Elas *elas;
@@ -39,8 +35,6 @@ public:
 
 	int64 workBegin();
 	double workEnd(int64 work_begin);
-
-    elasWrapper();
     
 	void init_elas(string _s, double disp_scaling_factor, bool elas_subsampling, bool add_corners, int ipol_gap_width);
     void release_elas();

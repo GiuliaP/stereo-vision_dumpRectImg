@@ -1,4 +1,4 @@
-#include <iCub/stereoVision/elasWrapper.h>
+#include <elasWrapper.h>
 
 #include "elas.h"
 
@@ -13,15 +13,6 @@ double elasWrapper::workEnd(int64 work_begin)
     double f = getTickFrequency();
     double work_time = d / f;
     return work_time;
-}
-
-elasWrapper::elasWrapper()
-{
-
-	width = 0;
-	height = 0;
-
-	disp_data_allocated = false;
 }
 
 void elasWrapper::init_elas(string _s, double _io_scaling_factor, bool elas_subsampling, bool _add_corners, int _ipol_gap_width)
@@ -72,21 +63,6 @@ void elasWrapper::release_elas()
 		elas = NULL;
 	}
 
-	width = 0;
-    height = 0;
-
-	if (dispL_data != NULL)
-	{
-		free(dispL_data);
-	}
-
-	if (dispR_data != NULL)
-	{
-		free(dispR_data);
-	}
-
-	disp_data_allocated = false;
-
 }
 
 double elasWrapper::compute_disparity(cv::Mat &imL, cv::Mat &imR, cv::Mat &dispL, int num_disparities)
@@ -109,22 +85,23 @@ double elasWrapper::compute_disparity(cv::Mat &imL, cv::Mat &imR, cv::Mat &dispL
     param->disp_max = num_disparities - 1;
 
     Mat imR_scaled, imL_scaled;
-    resize(imR, imR_scaled, Size(), io_scaling_factor, io_scaling_factor);
-    resize(imL, imL_scaled, Size(), io_scaling_factor, io_scaling_factor);
-
-    width = imL_scaled.cols;
-    height = imL_scaled.rows;
+    if (io_scaling_factor!=1.0)
+    {
+    	resize(imR, imR_scaled, Size(), io_scaling_factor, io_scaling_factor);
+    	resize(imL, imL_scaled, Size(), io_scaling_factor, io_scaling_factor);
+    } else
+    {
+    	imR_scaled = imR.clone();
+    	imL_scaled = imL.clone();
+    }
+    int width = imL_scaled.cols;
+    int height = imL_scaled.rows;
 
 	int width_disp_data = param->subsampling ? floor(width / 2) : width;
 	int height_disp_data = param->subsampling ? floor(height / 2) : height;
 
-	// if disp memory is free, allocate it
-	if (disp_data_allocated == false)
-	{
-	    dispL_data = (float*) malloc(width_disp_data * height_disp_data * sizeof(float));
-	    dispR_data = (float*) malloc(width_disp_data * height_disp_data * sizeof(float));
-	    disp_data_allocated == true;
-	}
+	float *dispL_data = (float*) malloc(width_disp_data * height_disp_data * sizeof(float));
+	float *dispR_data = (float*) malloc(width_disp_data * height_disp_data * sizeof(float));
 
 	// prepare input images
 	if (imL_scaled.channels() == 3)
@@ -142,10 +119,15 @@ double elasWrapper::compute_disparity(cv::Mat &imL, cv::Mat &imR, cv::Mat &dispL
 
 	elas->Elas::process((unsigned char*)imL_scaled.data,(unsigned char*)imR_scaled.data, dispL_data, dispR_data, dims);
 
-	dispL = Mat(height_disp_data, width_disp_data, CV_32FC1, dispL_data);
+	Mat dispL_scaled = Mat(height_disp_data, width_disp_data, CV_32FC1, dispL_data);
 
     if (io_scaling_factor!=1.0 || param->subsampling==true)
-	   resize(dispL, dispL, im_size);
+    	resize(dispL_scaled, dispL, im_size);
+    else
+    	dispL = dispL_scaled.clone();
+
+	free(dispL_data);
+	free(dispR_data);
 
 	return workEnd(start);
 
