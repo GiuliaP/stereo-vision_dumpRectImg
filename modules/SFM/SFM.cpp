@@ -273,7 +273,7 @@ bool SFM::close()
     leftImgPort.close();
     rightImgPort.close();
     outDisp.close();
-    outMatch.close();
+    outMatch.close();  
     handlerPort.close();
     worldPort.close();
 
@@ -295,7 +295,7 @@ bool SFM::close()
 #ifdef USING_GPU
     delete utils;
 #endif
-
+    
     return true;
 }
 
@@ -388,28 +388,28 @@ bool SFM::updateModule()
 
     if (outLeftRectImgPort.getOutputCount()>0)
     {
-    	Mat rectLeft = this->stereo->getLRectified();
+        Mat rectLeft = this->stereo->getLRectified();
 
-    	ImageOf<PixelBgr>& rectLeftImage = outLeftRectImgPort.prepare();
-    	rectLeftImage.resize(rectLeft.cols,rectLeft.rows);
+        ImageOf<PixelBgr>& rectLeftImage = outLeftRectImgPort.prepare();
+        rectLeftImage.resize(rectLeft.cols,rectLeft.rows);
 
-    	rectLeft.copyTo( cv::Mat( (IplImage*)rectLeftImage.getIplImage() ) );
+        rectLeft.copyTo( cv::Mat( (IplImage*)rectLeftImage.getIplImage() ) );
 
-    	outLeftRectImgPort.setEnvelope(stamp_left);
-    	outLeftRectImgPort.write();
+        outLeftRectImgPort.setEnvelope(stamp_left);
+        outLeftRectImgPort.write();
     }
 
     if (outRightRectImgPort.getOutputCount()>0)
     {
-    	Mat rectRight = this->stereo->getRRectified();
+        Mat rectRight = this->stereo->getRRectified();
 
-    	ImageOf<PixelBgr>& rectRightImage = outRightRectImgPort.prepare();
-    	rectRightImage.resize(rectRight.cols,rectRight.rows);
+        ImageOf<PixelBgr>& rectRightImage = outRightRectImgPort.prepare();
+        rectRightImage.resize(rectRight.cols,rectRight.rows);
 
-    	rectRight.copyTo( cv::Mat( (IplImage*)rectRightImage.getIplImage() ) );
+        rectRight.copyTo( cv::Mat( (IplImage*)rectRightImage.getIplImage() ) );
 
-    	outRightRectImgPort.setEnvelope(stamp_right);
-    	outRightRectImgPort.write();
+        outRightRectImgPort.setEnvelope(stamp_right);
+        outRightRectImgPort.write();
     }
 
     if (outMatch.getOutputCount()>0)

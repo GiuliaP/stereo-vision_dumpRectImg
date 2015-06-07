@@ -472,7 +472,7 @@ void StereoCamera::computeDisparity(bool best, int uniquenessRatio, int speckleW
                                     int speckleRange, int numberOfDisparities, int SADWindowSize,
                                     int minDisparity, int preFilterCap, int disp12MaxDiff)
 {
-	if (this->Kleft.empty() || this->DistL.empty() || this->Kright.empty() || this->DistR.empty())
+    if (this->Kleft.empty() || this->DistL.empty() || this->Kright.empty() || this->DistR.empty())
     {
         cout <<" Cameras are not calibrated! Run the Calibration first!" << endl;
         return;
@@ -522,7 +522,7 @@ void StereoCamera::computeDisparity(bool best, int uniquenessRatio, int speckleW
 
     if (use_elas)
     {
-    	elaswrap->compute_disparity(img1r, img2r, disp, numberOfDisparities);
+        elaswrap->compute_disparity(img1r, img2r, disp, numberOfDisparities);
 
         map = disp * (255.0 / numberOfDisparities);
         threshold(map, map, 0, 255.0, THRESH_TOZERO);
@@ -530,18 +530,18 @@ void StereoCamera::computeDisparity(bool best, int uniquenessRatio, int speckleW
     } else
     {
         StereoSGBM sgbm;
-        sgbm.preFilterCap =			preFilterCap; //63
-        sgbm.SADWindowSize =		SADWindowSize;
-        int cn =					this->imleft.channels();
-        sgbm.P1 = 					8*cn*sgbm.SADWindowSize*sgbm.SADWindowSize;
-        sgbm.P2 = 					32*cn*sgbm.SADWindowSize*sgbm.SADWindowSize;
-        sgbm.minDisparity =			minDisparity; //-15
-        sgbm.numberOfDisparities =	numberOfDisparities;
-        sgbm.uniquenessRatio = 		uniquenessRatio; //22
-        sgbm.speckleWindowSize = 	speckleWindowSize; //100
-        sgbm.speckleRange = 		speckleRange; //32
-        sgbm.disp12MaxDiff = 		disp12MaxDiff;
-        sgbm.fullDP = 				best; // alg == STEREO_HH
+        sgbm.preFilterCap =         preFilterCap; //63
+        sgbm.SADWindowSize =        SADWindowSize;
+        int cn =                    this->imleft.channels();
+        sgbm.P1 =                   8*cn*sgbm.SADWindowSize*sgbm.SADWindowSize;
+        sgbm.P2 =                   32*cn*sgbm.SADWindowSize*sgbm.SADWindowSize;
+        sgbm.minDisparity =         minDisparity; //-15
+        sgbm.numberOfDisparities =  numberOfDisparities;
+        sgbm.uniquenessRatio =      uniquenessRatio; //22
+        sgbm.speckleWindowSize =    speckleWindowSize; //100
+        sgbm.speckleRange =         speckleRange; //32
+        sgbm.disp12MaxDiff =        disp12MaxDiff;
+        sgbm.fullDP =               best; // alg == STEREO_HH
 
         sgbm(img1r, img2r, disp);
 
@@ -588,7 +588,7 @@ void StereoCamera::computeDisparity(bool best, int uniquenessRatio, int speckleW
     this->Disparity = disp8;
 
     if (use_elas)
-    	map.convertTo(disp, CV_16SC1);
+        map.convertTo(disp, CV_16SC1);
 
     this->Disparity16 = disp;
 

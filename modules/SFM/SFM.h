@@ -36,7 +36,7 @@ for the computation of the extrinsics parameters between two
 different views. These parameters are then used to rectify the 
 images and to compute a depth map using either the H. Hirschmuller 
 Algorithm (CVPR 2006), implemented since Opencv 2.2, or the ELAS library. 
-The Kinematics of the iCub is used to guess the current camera positions,
+The Kinematics of the iCub is used to guess the current camera positions, 
 then visual features are used to refine this model.
 Before starting, make sure you have calibrated the intrinsics 
 parameters. For the stereo calibration see the module <a 
@@ -132,7 +132,6 @@ against OpenCV versions: 2.4.
 #include <yarp/dev/all.h>
 #include <yarp/sig/all.h>
 #include <yarp/math/Math.h>
-
 #include <iCub/ctrl/math.h>
 #include <iCub/iKin/iKinFwd.h>
 #include <iCub/stereoVision/stereoCamera.h>
@@ -181,7 +180,7 @@ class SFM: public yarp::os::RFModule
 
     BufferedPort<ImageOf<PixelBgr> > outLeftRectImgPort;
     BufferedPort<ImageOf<PixelBgr> > outRightRectImgPort;
-
+    
     int numberOfTrials;
     string camCalibFile;
     bool useBestDisp;
@@ -238,3 +237,5 @@ public:
     Point3f get3DPointMatch(double u1, double v1, double u2, double v2, const string &drive="LEFT");
     Point2f projectPoint(const string &camera, double x, double y, double z);    
 };
+
+

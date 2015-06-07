@@ -92,9 +92,9 @@ void elasWrapper::release_elas()
 double elasWrapper::compute_disparity(cv::Mat &imL, cv::Mat &imR, cv::Mat &dispL, int num_disparities)
 {
 
-    int64 start = workBegin();
+	int64 start = workBegin();
 
-	// check for correct size
+    // check for correct size
 	if (imL.cols <= 0 || imL.rows <= 0 || imR.cols <= 0 || imR.rows <= 0
 			|| imL.cols != imR.cols || imL.rows != imR.rows)
 	{
@@ -104,7 +104,7 @@ double elasWrapper::compute_disparity(cv::Mat &imL, cv::Mat &imR, cv::Mat &dispL
 		return -1;
 	}
 
-	Size im_size = imL.size();
+    Size im_size = imL.size();
 
     param->disp_max = num_disparities - 1;
 
@@ -131,7 +131,7 @@ double elasWrapper::compute_disparity(cv::Mat &imL, cv::Mat &imR, cv::Mat &dispL
 	    dispL_data = (float*) malloc(width_disp_data * height_disp_data * sizeof(float));
 	    dispR_data = (float*) malloc(width_disp_data * height_disp_data * sizeof(float));
 	    disp_data_allocated == true;
-    }
+	}
 
 	// prepare input images
 	if (imL_scaled.channels() == 3)
@@ -151,7 +151,7 @@ double elasWrapper::compute_disparity(cv::Mat &imL, cv::Mat &imR, cv::Mat &dispL
 
 	dispL = Mat(height_disp_data, width_disp_data, CV_32FC1, dispL_data);
 
-	if (io_scaling_factor!=1.0)
+    if (io_scaling_factor!=1.0)
 	   resize(dispL, dispL, im_size);
 
 	return workEnd(start);
