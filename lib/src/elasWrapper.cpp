@@ -1,4 +1,4 @@
-#include <elasWrapper.h>
+#include <iCub/stereoVision/elasWrapper.h>
 
 #include "elas.h"
 

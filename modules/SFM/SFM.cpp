@@ -303,7 +303,10 @@ bool SFM::close()
 /******************************************************************************/
 bool SFM::updateModule()
 {
-    ImageOf<PixelRgb> *yarp_imgL=leftImgPort.read(true);
+
+	double SFM_start = Time::now();
+
+	ImageOf<PixelRgb> *yarp_imgL=leftImgPort.read(true);
     ImageOf<PixelRgb> *yarp_imgR=rightImgPort.read(true);
 
     Stamp stamp_left, stamp_right;
@@ -374,9 +377,15 @@ bool SFM::updateModule()
     mutexRecalibration.unlock();
 
     mutexDisp.lock();
+
+    double STEREO_start = Time::now();
+
     this->stereo->computeDisparity(this->useBestDisp,this->uniquenessRatio,this->speckleWindowSize,
                                    this->speckleRange,this->numberOfDisparities,this->SADWindowSize,
                                    this->minDisparity,this->preFilterCap,this->disp12MaxDiff);
+
+    double STEREO_period = (Time::now() - STEREO_start)*1000;
+
     mutexDisp.unlock();
     
     // DEBUG
@@ -453,6 +462,11 @@ bool SFM::updateModule()
         fillWorld3D(outim,0,0,left->width,left->height);
         worldPort.write();
     }
+
+    double SFM_period = (Time::now() - SFM_start)*1000;
+
+    printf("STEREO period:\t%g\n", STEREO_period);
+    printf("SFM period:\t%g\n", SFM_period);
 
     return true;
 }
