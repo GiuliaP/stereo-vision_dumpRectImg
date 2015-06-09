@@ -522,13 +522,7 @@ void StereoCamera::computeDisparity(bool best, int uniquenessRatio, int speckleW
 
     if (use_elas)
     {
-        double ELAS_start = Time::now();
-
     	elaswrap->compute_disparity(img1r, img2r, disp, numberOfDisparities);
-
-    	double ELAS_period = (Time::now() - ELAS_start)*1000;
-
-    	printf("ELAS period:\t%g\n", ELAS_period);
 
         map = disp * (255.0 / numberOfDisparities);
         //threshold(map, map, 0, 255.0, THRESH_TOZERO);
