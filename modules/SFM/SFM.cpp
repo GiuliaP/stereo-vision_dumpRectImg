@@ -73,9 +73,13 @@ bool SFM::configure(ResourceFinder &rf)
 
     this->stereo = new StereoCamera(true);
 
-    disp_library = rf.check("disp_library", Value("elas")).asString().c_str();
+    use_sgbm = false;
+    if (rf.check("use_sgbm"))
+    {
+        use_sgbm = true;
+    }
 
-    if (disp_library=="elas")
+    if (!use_sgbm)
     {
         
         string elas_setting = rf.check("elas_setting",Value("MIDDLEBURY")).asString().c_str();
@@ -286,7 +290,7 @@ bool SFM::close()
     outLeftRectImgPort.close();
     outRightRectImgPort.close();
 
-    if (disp_library=="elas")
+    if (!use_sgbm)
         stereo->releaseELAS();
 
     headCtrl.close();

@@ -162,7 +162,7 @@ class SFM: public yarp::os::RFModule
 
     Mat leftMat, rightMat;
 
-    string disp_library;
+    bool use_sgbm;
 
 #ifdef USING_GPU
     /* pointer to the utilities class */
