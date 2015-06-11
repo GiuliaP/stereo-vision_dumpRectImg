@@ -1,7 +1,5 @@
 #include <iCub/stereoVision/elasWrapper.h>
 
-#include "elas.h"
-
 int64 elasWrapper::workBegin()
 {
 	return getTickCount();
@@ -15,57 +13,36 @@ double elasWrapper::workEnd(int64 work_begin)
     return work_time;
 }
 
-void elasWrapper::init_elas(string _s, double _io_scaling_factor, bool elas_subsampling, bool _add_corners, int _ipol_gap_width)
+elasWrapper::elasWrapper(double _io_scaling_factor, parameters &p) : Elas(p)
 {
+	io_scaling_factor = _io_scaling_factor;
 
-	Elas::setting s;
-	s = Elas::MIDDLEBURY;
+	cout << "disp_scaling_factor" << io_scaling_factor << endl;
 
-	if (_s == "ROBOTICS")
-		s = Elas::ROBOTICS;
+	cout << "subsampling" << get_param<bool>(subsampling) << endl;
+	cout << "add_corners" << get_param<bool>(add_corners) << endl;
 
-	if (_s == "MIDDLEBURY")
-		s = Elas::MIDDLEBURY;
+	cout << "ipol_gap_width" << get_param<int>(ipol_gap_width) << endl;
 
-	param = new Elas::parameters(s);
+	cout << "support_threshold" << get_param<float>(support_threshold) << endl;
+	cout << "gamma" << get_param<float>(gamma) << endl;
+	cout << "sradius" << get_param<float>(sradius) << endl;
 
-	param->postprocess_only_left = true;
+	cout << "match_texture" << get_param<int>(match_texture) << endl;
 
-    io_scaling_factor = _io_scaling_factor;
+	cout << "filter_median" << get_param<bool>(filter_median) << endl;
+	cout << "filter_adaptive_mean" << get_param<bool>(filter_adaptive_mean) << endl;
 
-	param->subsampling = elas_subsampling;
-
-    param->add_corners = _add_corners;
-	param->ipol_gap_width = _ipol_gap_width;
-
-	elas = new Elas(*param);
-
-    std::cout << "elas_setting " << _s << std::endl;
-    std::cout << "io_scaling_factor " <<  io_scaling_factor << std::endl;
-    std::cout << "elas_subsampling " << param->subsampling << std::endl;
-    std::cout << "add_corners " << param->add_corners << std::endl;
-    std::cout << "ipol_gap_width " << param->ipol_gap_width << std::endl;
- 
+	cout << "disp_max" << get_param<int>(disp_max) << endl;
 }
 
-void elasWrapper::release_elas()
+elasWrapper::elasWrapper() : Elas(parameters(ROBOTICS))
 {
-
-	if (param!=NULL)
-	{
-		delete param;
-		param = NULL;
-	}
-
-	if (elas!=NULL)
-	{
-		delete elas;
-		elas = NULL;
-	}
-
+	io_scaling_factor = 1.0;
 }
 
-double elasWrapper::compute_disparity(cv::Mat &imL, cv::Mat &imR, cv::Mat &dispL, int num_disparities)
+
+double elasWrapper::compute_disparity(cv::Mat &imL, cv::Mat &imR, cv::Mat &dispL)
 {
 
 	int64 start = workBegin();
@@ -82,8 +59,6 @@ double elasWrapper::compute_disparity(cv::Mat &imL, cv::Mat &imR, cv::Mat &dispL
 
     Size im_size = imL.size();
 
-    param->disp_max = num_disparities - 1;
-
     Mat imR_scaled, imL_scaled;
     if (io_scaling_factor!=1.0)
     {
@@ -97,8 +72,8 @@ double elasWrapper::compute_disparity(cv::Mat &imL, cv::Mat &imR, cv::Mat &dispL
     int width = imL_scaled.cols;
     int height = imL_scaled.rows;
 
-	int width_disp_data = param->subsampling ? floor(width / 2) : width;
-	int height_disp_data = param->subsampling ? floor(height / 2) : height;
+	int width_disp_data = get_param<bool>(subsampling) ? width>>1 : width;
+	int height_disp_data = get_param<bool>(subsampling) ? height>>1 : height;
 
 	float *dispL_data = (float*) malloc(width_disp_data * height_disp_data * sizeof(float));
 	float *dispR_data = (float*) malloc(width_disp_data * height_disp_data * sizeof(float));
@@ -117,11 +92,11 @@ double elasWrapper::compute_disparity(cv::Mat &imL, cv::Mat &imR, cv::Mat &dispL
     // compute disparity
 	const int32_t dims[3] = {width,height,width}; // bytes per line = width
 
-	elas->Elas::process((unsigned char*)imL_scaled.data,(unsigned char*)imR_scaled.data, dispL_data, dispR_data, dims);
+	process((unsigned char*)imL_scaled.data,(unsigned char*)imR_scaled.data, dispL_data, dispR_data, dims);
 
 	Mat dispL_scaled = Mat(height_disp_data, width_disp_data, CV_32FC1, dispL_data);
 
-    if (io_scaling_factor!=1.0 || param->subsampling==true)
+    if (io_scaling_factor!=1.0 || get_param<bool>(subsampling)==true)
     	resize(dispL_scaled, dispL, im_size);
     else
     	dispL = dispL_scaled.clone();

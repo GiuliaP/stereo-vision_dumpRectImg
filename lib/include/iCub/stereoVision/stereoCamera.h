@@ -191,12 +191,7 @@ public:
     /**
     * Initialization of ELAS parameters
     */
-    void initELAS(string elas_setting, double disp_scaling_factor, bool elas_subsampling, bool add_corners, int ipol_gap_width);
-
-    /**
-    * Relase ELAS resources
-    */
-    void releaseELAS();
+    void initELAS(yarp::os::ResourceFinder &rf);
 
     /**
     * It performs the stereo camera calibration. (see \ref stereoCalibration module)

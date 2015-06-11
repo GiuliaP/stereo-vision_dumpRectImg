@@ -56,6 +56,32 @@ public:
 
   enum setting {ROBOTICS,MIDDLEBURY};
 
+  enum param_field {
+  		disp_min,
+  		disp_max,
+  		support_threshold,
+  		support_texture,
+  		candidate_stepsize,
+  		incon_window_size,
+  		incon_threshold,
+  		incon_min_support,
+  		add_corners,
+  		grid_size,
+  		beta,
+  		gamma,
+  		sigma,
+  		sradius,
+  		match_texture,
+  		lr_threshold,
+  		speckle_size,
+  		speckle_sim_threshold,
+  		ipol_gap_width,
+  		filter_median,
+  		filter_adaptive_mean,
+  		postprocess_only_left,
+  		subsampling
+  	};
+
   // parameter settings
   struct parameters {
     int32_t disp_min;               // min disparity
@@ -161,6 +187,82 @@ public:
   //               if subsampling is not active their size is width x height,
   //               otherwise width/2 x height/2 (rounded towards zero)
   void process (uint8_t* I1,uint8_t* I2,float* D1,float* D2,const int32_t* dims);
+
+  template <typename T>
+  T get_param(param_field param_name)
+  {
+      switch (param_name) {
+      	case add_corners:
+      		return param.add_corners;
+      		break;
+      	case filter_median:
+      		return param.filter_median;
+      		break;
+      	case filter_adaptive_mean:
+      		return param.filter_adaptive_mean;
+      		break;
+      	case postprocess_only_left:
+      		return param.postprocess_only_left;
+      		break;
+      	case subsampling:
+      		return param.subsampling;
+      		break;
+      	case disp_min:
+      		return param.disp_min;
+      		break;
+      	case disp_max:
+      		return param.disp_max;
+      		break;
+      	case support_texture:
+      		return param.support_texture;
+      		break;
+      	case candidate_stepsize:
+      		return param.candidate_stepsize;
+      		break;
+      	case incon_window_size:
+      		return param.incon_window_size;
+      		break;
+      	case incon_threshold:
+      		return param.incon_threshold;
+      		break;
+      	case incon_min_support:
+      		return param.incon_min_support;
+      		break;
+      	case grid_size:
+      		return param.grid_size;
+      		break;
+      	case match_texture:
+      		return param.match_texture;
+      		break;
+      	case lr_threshold:
+      		return param.lr_threshold;
+      		break;
+      	case speckle_size:
+      		return param.speckle_size;
+      		break;
+      	case ipol_gap_width:
+      		return param.ipol_gap_width;
+      		break;
+      	case support_threshold:
+      		return param.support_threshold;
+      		break;
+      	case beta:
+      		return param.beta;
+      		break;
+      	case gamma:
+      		return param.gamma;
+      		break;
+      	case sigma:
+      		return param.sigma;
+      		break;
+      	case sradius:
+      		return param.sradius;
+      		break;
+      	case speckle_sim_threshold:
+      		return param.speckle_sim_threshold;
+      		break;
+      };
+  }
 
 private:
 

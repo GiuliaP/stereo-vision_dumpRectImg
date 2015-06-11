@@ -108,24 +108,51 @@ StereoCamera::StereoCamera(Camera Left, Camera Right,bool rectify) {
 
 }
 
-void StereoCamera::initELAS(string elas_setting, double disp_scaling_factor, bool elas_subsampling, bool add_corners, int ipol_gap_width) 
+void StereoCamera::initELAS(yarp::os::ResourceFinder &rf)
 {
 
         use_elas = true;
 
-        elaswrap = new elasWrapper();
+        string elas_string = rf.check("elas_setting",Value("ROBOTICS")).asString().c_str();
+        elasWrapper::setting elas_setting = ( elas_string == "MIDDLEBURY") ? elasWrapper::MIDDLEBURY : elasWrapper::ROBOTICS;
+        elasWrapper::parameters elas_param(elas_setting);
 
-        elaswrap->init_elas(elas_setting, disp_scaling_factor, elas_subsampling, add_corners, ipol_gap_width);
+        cout << "elas_setting" << elas_string << endl;
 
-}
+        if (rf.check("elas_subsampling"))
+        	elas_param.subsampling = true;
 
-void StereoCamera::releaseELAS()
-{
-        elaswrap->release_elas();
+        if (rf.check("elas_add_corners"))
+        	elas_param.add_corners = true;
 
-        delete elaswrap;
+        if (rf.check("elas_ipol_gap_width"))
+        	elas_param.ipol_gap_width = rf.find("elas_ipol_gap_width").asInt();
 
-        use_elas = false;
+        if (rf.check("elas_support_threshold"))
+        	elas_param.support_threshold = rf.find("elas_support_threshold").asDouble();
+
+        if(rf.check("elas_gamma"))
+        	elas_param.gamma = rf.find("elas_gamma").asDouble();
+
+        if (rf.check("elas_sradius"))
+        	elas_param.sradius = rf.find("elas_sradius").asDouble();
+
+        if (rf.check("elas_match_texture"))
+        	elas_param.match_texture = rf.find("elas_match_texture").asInt();
+
+        if (rf.check("elas_filter_median"))
+        	elas_param.filter_median = rf.find("elas_filter_median").asBool();
+
+        if (rf.check("elas_filter_adaptive_mean"))
+        	elas_param.filter_adaptive_mean = rf.find("elas_filter_adaptive_mean").asBool();
+
+        int width = rf.find("w").asInt();
+        elas_param.disp_max = ((width<=320) ? 96 : 128) - 1;
+
+        double disp_scaling_factor = rf.check("disp_scaling_factor",Value(1.0)).asDouble();
+
+        elaswrap = new elasWrapper(disp_scaling_factor, elas_param);
+
 }
 
 void StereoCamera::setImages(IplImage * left, IplImage * right) {
@@ -522,9 +549,9 @@ void StereoCamera::computeDisparity(bool best, int uniquenessRatio, int speckleW
 
     if (use_elas)
     {
-    	elaswrap->compute_disparity(img1r, img2r, disp, numberOfDisparities);
+        elaswrap->compute_disparity(img1r, img2r, disp);
 
-        map = disp * (255.0 / numberOfDisparities);
+        map = disp * (255.0 / (elaswrap->get_param<int>(elasWrapper::disp_max)-1));
         //threshold(map, map, 0, 255.0, THRESH_TOZERO);
 
     } else
