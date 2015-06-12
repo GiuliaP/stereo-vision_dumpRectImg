@@ -261,8 +261,90 @@ public:
       	case speckle_sim_threshold:
       		return param.speckle_sim_threshold;
       		break;
+        default:
+            std::cout << "param_set failed: " << param_name << std::endl;
+            return 0;
+            break;
       };
   }
+
+template <typename T>
+void set_param(param_field param_name, T param_value)
+{
+    switch (param_name) {
+        case add_corners:
+            param.add_corners = param_value;
+            break;
+        case filter_median:
+            param.filter_median  = param_value;;
+            break;
+        case filter_adaptive_mean:
+            param.filter_adaptive_mean = param_value;
+            break;
+        case postprocess_only_left:
+            param.postprocess_only_left = param_value;
+            break;
+        case subsampling:
+            param.subsampling = param_value;
+            break;
+        case disp_min:
+            param.disp_min = param_value;
+            break;
+        case disp_max:
+            param.disp_max = param_value;
+            break;
+        case support_texture:
+            param.support_texture = param_value;
+            break;
+        case candidate_stepsize:
+            param.candidate_stepsize = param_value;
+            break;
+        case incon_window_size:
+            param.incon_window_size = param_value;
+            break;
+        case incon_threshold:
+            param.incon_threshold = param_value;
+            break;
+        case incon_min_support:
+            param.incon_min_support = param_value;
+            break;
+        case grid_size:
+            param.grid_size = param_value;
+            break;
+        case match_texture:
+            param.match_texture = param_value;
+            break;
+        case lr_threshold:
+            param.lr_threshold = param_value;
+            break;
+        case speckle_size:
+            param.speckle_size = param_value;
+            break;
+        case ipol_gap_width:
+            param.ipol_gap_width = param_value;
+            break;
+        case support_threshold:
+            param.support_threshold = param_value;
+            break;
+        case beta:
+            param.beta = param_value;
+            break;
+        case gamma:
+            param.gamma = param_value;
+            break;
+        case sigma:
+            param.sigma = param_value;
+            break;
+        case sradius:
+            param.sradius = param_value;
+            break;
+        case speckle_sim_threshold:
+            param.speckle_sim_threshold = param_value;
+            break;
+        default:
+            break;
+    };
+}
 
 private:
 
@@ -323,9 +405,11 @@ private:
   void adaptiveMean (float* D);
   void median (float* D);
 
+protected:
   // parameter set
   parameters param;
 
+private:
   // memory aligned input images + dimensions
   uint8_t *I1,*I2;
   int32_t width,height,bpl;

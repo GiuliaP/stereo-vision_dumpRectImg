@@ -84,9 +84,9 @@ public:
 	double workEnd(int64 work_begin);
     
 	elasWrapper();
-	elasWrapper(double scaling_factor, parameters &p);
+	elasWrapper(double scaling_factor, string elas_setting);
 
-	double compute_disparity(cv::Mat &imL, cv::Mat &imR, cv::Mat &dispL);
+	double compute_disparity(cv::Mat &imL, cv::Mat &imR, cv::Mat &dispL, int num_disparities);
 
 };
 

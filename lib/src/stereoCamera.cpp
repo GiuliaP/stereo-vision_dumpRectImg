@@ -114,44 +114,56 @@ void StereoCamera::initELAS(yarp::os::ResourceFinder &rf)
         use_elas = true;
 
         string elas_string = rf.check("elas_setting",Value("ROBOTICS")).asString().c_str();
-        elasWrapper::setting elas_setting = ( elas_string == "MIDDLEBURY") ? elasWrapper::MIDDLEBURY : elasWrapper::ROBOTICS;
-        elasWrapper::parameters elas_param(elas_setting);
-
-        cout << "elas_setting" << elas_string << endl;
-
+    
+        double disp_scaling_factor = rf.check("disp_scaling_factor",Value(1.0)).asDouble();
+    
+        elaswrap = new elasWrapper(disp_scaling_factor, elas_string);
+    
         if (rf.check("elas_subsampling"))
-        	elas_param.subsampling = true;
+            elaswrap->set_param<bool>(Elas::subsampling,true);
 
         if (rf.check("elas_add_corners"))
-        	elas_param.add_corners = true;
+        	elaswrap->set_param<bool>(Elas::add_corners,true);
 
         if (rf.check("elas_ipol_gap_width"))
-        	elas_param.ipol_gap_width = rf.find("elas_ipol_gap_width").asInt();
+        	elaswrap->set_param<int>(Elas::ipol_gap_width,rf.find("elas_ipol_gap_width").asInt());
 
         if (rf.check("elas_support_threshold"))
-        	elas_param.support_threshold = rf.find("elas_support_threshold").asDouble();
+        	elaswrap->set_param<float>(Elas::support_threshold,rf.find("elas_support_threshold").asDouble());
 
         if(rf.check("elas_gamma"))
-        	elas_param.gamma = rf.find("elas_gamma").asDouble();
+        	elaswrap->set_param<float>(Elas::gamma,rf.find("elas_gamma").asDouble());
 
         if (rf.check("elas_sradius"))
-        	elas_param.sradius = rf.find("elas_sradius").asDouble();
+        	elaswrap->set_param<float>(Elas::sradius,rf.find("elas_sradius").asDouble());
 
         if (rf.check("elas_match_texture"))
-        	elas_param.match_texture = rf.find("elas_match_texture").asInt();
+        	elaswrap->set_param<int>(Elas::match_texture,rf.find("elas_match_texture").asInt());
 
         if (rf.check("elas_filter_median"))
-        	elas_param.filter_median = rf.find("elas_filter_median").asBool();
+        	elaswrap->set_param<bool>(Elas::filter_median,rf.find("elas_filter_median").asBool());
 
         if (rf.check("elas_filter_adaptive_mean"))
-        	elas_param.filter_adaptive_mean = rf.find("elas_filter_adaptive_mean").asBool();
+        	elaswrap->set_param<bool>(Elas::filter_adaptive_mean, rf.find("elas_filter_adaptive_mean").asBool());
+    
+        cout << "disp_scaling_factor: " << disp_scaling_factor << endl;
+        
+        cout << "elas_setting: " << elas_string << endl;
+        
+        cout << "subsampling: " << elaswrap->get_param<bool>(Elas::subsampling) << endl;
+        cout << "add_corners: " << elaswrap->get_param<bool>(Elas::add_corners) << endl;
+        
+        cout << "ipol_gap_width: " << elaswrap->get_param<int>(Elas::ipol_gap_width) << endl;
+        
+        cout << "support_threshold: " << elaswrap->get_param<float>(Elas::support_threshold) << endl;
+        cout << "gamma: " << elaswrap->get_param<float>(Elas::gamma) << endl;
+        cout << "sradius: " << elaswrap->get_param<float>(Elas::sradius) << endl;
+        
+        cout << "match_texture: " << elaswrap->get_param<bool>(Elas::match_texture) << endl;
+        
+        cout << "filter_median: " << elaswrap->get_param<bool>(Elas::filter_median) << endl;
+        cout << "filter_adaptive_mean: " << elaswrap->get_param<bool>(Elas::filter_adaptive_mean) << endl;
 
-        int width = rf.find("w").asInt();
-        elas_param.disp_max = ((width<=320) ? 96 : 128) - 1;
-
-        double disp_scaling_factor = rf.check("disp_scaling_factor",Value(1.0)).asDouble();
-
-        elaswrap = new elasWrapper(disp_scaling_factor, elas_param);
 
 }
 
@@ -549,9 +561,10 @@ void StereoCamera::computeDisparity(bool best, int uniquenessRatio, int speckleW
 
     if (use_elas)
     {
-        elaswrap->compute_disparity(img1r, img2r, disp);
+        
+        elaswrap->compute_disparity(img1r, img2r, disp, numberOfDisparities);
 
-        map = disp * (255.0 / (elaswrap->get_param<int>(elasWrapper::disp_max)-1));
+        map = disp * (255.0 / numberOfDisparities);
         //threshold(map, map, 0, 255.0, THRESH_TOZERO);
 
     } else

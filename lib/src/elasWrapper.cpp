@@ -13,36 +13,19 @@ double elasWrapper::workEnd(int64 work_begin)
     return work_time;
 }
 
-elasWrapper::elasWrapper(double _io_scaling_factor, parameters &p) : Elas(p)
+elasWrapper::elasWrapper(double _io_scaling_factor, string elas_setting) : Elas(parameters(( elas_setting == "MIDDLEBURY") ? MIDDLEBURY : ROBOTICS))
 {
 	io_scaling_factor = _io_scaling_factor;
-
-	cout << "disp_scaling_factor" << io_scaling_factor << endl;
-
-	cout << "subsampling" << get_param<bool>(subsampling) << endl;
-	cout << "add_corners" << get_param<bool>(add_corners) << endl;
-
-	cout << "ipol_gap_width" << get_param<int>(ipol_gap_width) << endl;
-
-	cout << "support_threshold" << get_param<float>(support_threshold) << endl;
-	cout << "gamma" << get_param<float>(gamma) << endl;
-	cout << "sradius" << get_param<float>(sradius) << endl;
-
-	cout << "match_texture" << get_param<int>(match_texture) << endl;
-
-	cout << "filter_median" << get_param<bool>(filter_median) << endl;
-	cout << "filter_adaptive_mean" << get_param<bool>(filter_adaptive_mean) << endl;
-
-	cout << "disp_max" << get_param<int>(disp_max) << endl;
 }
 
 elasWrapper::elasWrapper() : Elas(parameters(ROBOTICS))
+
 {
 	io_scaling_factor = 1.0;
 }
 
 
-double elasWrapper::compute_disparity(cv::Mat &imL, cv::Mat &imR, cv::Mat &dispL)
+double elasWrapper::compute_disparity(cv::Mat &imL, cv::Mat &imR, cv::Mat &dispL, int num_disparities)
 {
 
 	int64 start = workBegin();
@@ -58,6 +41,10 @@ double elasWrapper::compute_disparity(cv::Mat &imL, cv::Mat &imR, cv::Mat &dispL
 	}
 
     Size im_size = imL.size();
+    
+    param.disp_max = num_disparities - 1;
+    
+    cout << "disp_max: " << param.disp_max  << endl;
 
     Mat imR_scaled, imL_scaled;
     if (io_scaling_factor!=1.0)
@@ -72,8 +59,8 @@ double elasWrapper::compute_disparity(cv::Mat &imL, cv::Mat &imR, cv::Mat &dispL
     int width = imL_scaled.cols;
     int height = imL_scaled.rows;
 
-	int width_disp_data = get_param<bool>(subsampling) ? width>>1 : width;
-	int height_disp_data = get_param<bool>(subsampling) ? height>>1 : height;
+	int width_disp_data = param.subsampling ? width>>1 : width;
+	int height_disp_data = param.subsampling ? height>>1 : height;
 
 	float *dispL_data = (float*) malloc(width_disp_data * height_disp_data * sizeof(float));
 	float *dispR_data = (float*) malloc(width_disp_data * height_disp_data * sizeof(float));
@@ -96,7 +83,7 @@ double elasWrapper::compute_disparity(cv::Mat &imL, cv::Mat &imR, cv::Mat &dispL
 
 	Mat dispL_scaled = Mat(height_disp_data, width_disp_data, CV_32FC1, dispL_data);
 
-    if (io_scaling_factor!=1.0 || get_param<bool>(subsampling)==true)
+    if (io_scaling_factor!=1.0 || param.subsampling==true)
     	resize(dispL_scaled, dispL, im_size);
     else
     	dispL = dispL_scaled.clone();
