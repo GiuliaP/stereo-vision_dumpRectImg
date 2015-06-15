@@ -118,21 +118,24 @@ see <a href="https://github.com/robotology/stereo-vision/tree/master/lib/elas/in
 for the complete list of parameters, their definitions and default values.
 
 --elas_subsampling
-- Pass the parameter \e elas_subsampling if you want to set LIBELAS \e subsampling parameter to \e true,
-to speedup the computation inside LIBELAS (at the expenses of accuracy).
+- Pass the parameter \e elas_subsampling if you want to set the \e subsampling parameter to \e true
+in <a href="https://github.com/robotology/stereo-vision/tree/master/lib/elas/include/elas.h">elas.h</a>,
+to speedup the computation (at the expenses of accuracy).
 
 --elas_add_corners
-- Pass the parameter \e elas_add_corners if you want to set LIBELAS \e add_corners parameter to \e true,
+- Pass the parameter \e elas_add_corners if you want to set \e add_corners parameter to \e true
+in <a href="https://github.com/robotology/stereo-vision/tree/master/lib/elas/include/elas.h">elas.h</a>,
 to consider also the image corners in the computation of the disparity map.
 
 --elas_ipol_gap_width \e 40
-- This is the only parameter for which we set a default value different from the ones provided by LIBELAS
-(\e 3 in \e ROBOTICS and \e 5000 in \e MIDDLEBURY). It is the radius of interpolation (in pixel)
+- This is the only parameter for which we set a default value different from the ones provided
+in <a href="https://github.com/robotology/stereo-vision/tree/master/lib/elas/include/elas.h">elas.h</a>, where
+the \e ipol_gap_width parameter is set to \e 3 in \e ROBOTICS and \e 5000 in \e MIDDLEBURY. It is the radius of interpolation (in pixel)
 of the disparity values found in the keypoints. Small values result in sparser disparity maps (with more
 black holes); high values result in denser maps, with the black regions filled with interpolated values.
 
-The following LIBELAS parameters can also be modified by the user,
-however we stick with the values proposed by the authors.
+Also the following LIBELAS parameters can be modified by the user,
+however we stick with the values provided by the authors.
 
 --elas_support_threshold \e 0.85
 - This is the \e support_threshold parameter in <a href="https://github.com/robotology/stereo-vision/tree/master/lib/elas/include/elas.h">elas.h</a>,
