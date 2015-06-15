@@ -58,8 +58,10 @@ YARP libraries and OpenCV 2.4 (at least). \n
 For better performance, we suggest you to run the module on a 
 machine equipped with GPU functionality along with the 
 <a href="http://cs.unc.edu/~ccwu/siftgpu">SiftGPU</a> library 
-installed. This module can also use <a href="http://www.cvlibs.net/software/libelas/">LIBELAS </a>
-to compute the horizontal disparity map from the rectiefied left and right images.
+installed. This module now uses <a href="http://www.cvlibs.net/software/libelas/">LIBELAS </a>
+by default to compute the horizontal disparity map from the rectified left and right images.
+The source code of LIBELAS is compiled with the stereoVisionLib (with no particular dependences).
+The OpenMP accelerated version of the LIBELAS is used under UNIX systems, if OpenMP is available.
 
 \section parameters_sec Parameters
 --name \e SFM 
