@@ -110,60 +110,69 @@ StereoCamera::StereoCamera(Camera Left, Camera Right,bool rectify) {
 
 void StereoCamera::initELAS(yarp::os::ResourceFinder &rf)
 {
+    use_elas = true;
 
-        use_elas = true;
+    string elas_string = rf.check("elas_setting",Value("ROBOTICS")).asString().c_str();
 
-        string elas_string = rf.check("elas_setting",Value("ROBOTICS")).asString().c_str();
+    double disp_scaling_factor = rf.check("disp_scaling_factor",Value(1.0)).asDouble();
+
+    elaswrap = new elasWrapper(disp_scaling_factor, elas_string);
+
     
-        double disp_scaling_factor = rf.check("disp_scaling_factor",Value(1.0)).asDouble();
-    
-        elaswrap = new elasWrapper(disp_scaling_factor, elas_string);
-    
-        if (rf.check("elas_subsampling"))
-            elaswrap->set_param<bool>(Elas::subsampling,true);
+    if (rf.check("elas_subsampling"))
+        elaswrap->set_param<bool>(elasWrapper::subsampling,true);
 
-        if (rf.check("elas_add_corners"))
-        	elaswrap->set_param<bool>(Elas::add_corners,true);
+    if (rf.check("elas_add_corners"))
+    	elaswrap->set_param<bool>(elasWrapper::add_corners,true);
 
-        if (rf.check("elas_ipol_gap_width"))
-        	elaswrap->set_param<int>(Elas::ipol_gap_width,rf.find("elas_ipol_gap_width").asInt());
 
-        if (rf.check("elas_support_threshold"))
-        	elaswrap->set_param<float>(Elas::support_threshold,rf.find("elas_support_threshold").asDouble());
+    elaswrap->set_param<int>(elasWrapper::ipol_gap_width, 40);
+    if (rf.check("elas_ipol_gap_width"))
+    	elaswrap->set_param<int>(elasWrapper::ipol_gap_width,rf.find("elas_ipol_gap_width").asInt());
 
-        if(rf.check("elas_gamma"))
-        	elaswrap->set_param<float>(Elas::gamma,rf.find("elas_gamma").asDouble());
 
-        if (rf.check("elas_sradius"))
-        	elaswrap->set_param<float>(Elas::sradius,rf.find("elas_sradius").asDouble());
+    if (rf.check("elas_support_threshold"))
+    	elaswrap->set_param<float>(elasWrapper::support_threshold,rf.find("elas_support_threshold").asDouble());
 
-        if (rf.check("elas_match_texture"))
-        	elaswrap->set_param<int>(Elas::match_texture,rf.find("elas_match_texture").asInt());
+    if(rf.check("elas_gamma"))
+    	elaswrap->set_param<float>(elasWrapper::gamma,rf.find("elas_gamma").asDouble());
 
-        if (rf.check("elas_filter_median"))
-        	elaswrap->set_param<bool>(Elas::filter_median,rf.find("elas_filter_median").asBool());
+    if (rf.check("elas_sradius"))
+    	elaswrap->set_param<float>(elasWrapper::sradius,rf.find("elas_sradius").asDouble());
 
-        if (rf.check("elas_filter_adaptive_mean"))
-        	elaswrap->set_param<bool>(Elas::filter_adaptive_mean, rf.find("elas_filter_adaptive_mean").asBool());
-    
-        cout << "disp_scaling_factor: " << disp_scaling_factor << endl;
-        
-        cout << "elas_setting: " << elas_string << endl;
-        
-        cout << "subsampling: " << elaswrap->get_param<bool>(Elas::subsampling) << endl;
-        cout << "add_corners: " << elaswrap->get_param<bool>(Elas::add_corners) << endl;
-        
-        cout << "ipol_gap_width: " << elaswrap->get_param<int>(Elas::ipol_gap_width) << endl;
-        
-        cout << "support_threshold: " << elaswrap->get_param<float>(Elas::support_threshold) << endl;
-        cout << "gamma: " << elaswrap->get_param<float>(Elas::gamma) << endl;
-        cout << "sradius: " << elaswrap->get_param<float>(Elas::sradius) << endl;
-        
-        cout << "match_texture: " << elaswrap->get_param<bool>(Elas::match_texture) << endl;
-        
-        cout << "filter_median: " << elaswrap->get_param<bool>(Elas::filter_median) << endl;
-        cout << "filter_adaptive_mean: " << elaswrap->get_param<bool>(Elas::filter_adaptive_mean) << endl;
+    if (rf.check("elas_match_texture"))
+    	elaswrap->set_param<int>(elasWrapper::match_texture,rf.find("elas_match_texture").asInt());
 
+    if (rf.check("elas_filter_median"))
+    	elaswrap->set_param<bool>(elasWrapper::filter_median,rf.find("elas_filter_median").asBool());
+
+    if (rf.check("elas_filter_adaptive_mean"))
+    	elaswrap->set_param<bool>(elasWrapper::filter_adaptive_mean, rf.find("elas_filter_adaptive_mean").asBool());
+
+
+    cout << endl << "ELAS parameters:" << endl << endl;
+
+    cout << "disp_scaling_factor: " << disp_scaling_factor << endl;
+
+    cout << "setting: " << elas_string << endl;
+
+    cout << "postprocess_only_left: " << elaswrap->get_param<bool>(elasWrapper::postprocess_only_left) << endl;
+    cout << "subsampling: " << elaswrap->get_param<bool>(elasWrapper::subsampling) << endl;
+
+    cout << "add_corners: " << elaswrap->get_param<bool>(elasWrapper::add_corners) << endl;
+
+    cout << "ipol_gap_width: " << elaswrap->get_param<int>(elasWrapper::ipol_gap_width) << endl;
+
+    cout << "support_threshold: " << elaswrap->get_param<float>(elasWrapper::support_threshold) << endl;
+    cout << "gamma: " << elaswrap->get_param<float>(elasWrapper::gamma) << endl;
+    cout << "sradius: " << elaswrap->get_param<float>(elasWrapper::sradius) << endl;
+
+    cout << "match_texture: " << elaswrap->get_param<bool>(elasWrapper::match_texture) << endl;
+
+    cout << "filter_median: " << elaswrap->get_param<bool>(elasWrapper::filter_median) << endl;
+    cout << "filter_adaptive_mean: " << elaswrap->get_param<bool>(elasWrapper::filter_adaptive_mean) << endl;
+
+    cout << endl;
 
 }
 

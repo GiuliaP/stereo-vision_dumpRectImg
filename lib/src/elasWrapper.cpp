@@ -15,12 +15,15 @@ double elasWrapper::workEnd(int64 work_begin)
 
 elasWrapper::elasWrapper(double _io_scaling_factor, string elas_setting) : Elas(parameters(( elas_setting == "MIDDLEBURY") ? MIDDLEBURY : ROBOTICS))
 {
+	param.postprocess_only_left = true;
+
 	io_scaling_factor = _io_scaling_factor;
 }
 
 elasWrapper::elasWrapper() : Elas(parameters(ROBOTICS))
-
 {
+	param.postprocess_only_left = true;
+
 	io_scaling_factor = 1.0;
 }
 
