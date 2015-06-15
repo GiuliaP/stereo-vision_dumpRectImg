@@ -190,7 +190,7 @@ public:
 
     /**
     * Initialization of ELAS parameters.
-    * @param It uses the ResourceFinder mechanism to set them either to the default value or to the value passed by the user via command line.
+    * @param rf The ResourceFinder mechanism is used to set the parameters either to the default value or to the value passed by the user via command line.
     * See the documentation of the \ref SFM module to get the list of parameters that are processed by this initialization function.
     */
     void initELAS(yarp::os::ResourceFinder &rf);
