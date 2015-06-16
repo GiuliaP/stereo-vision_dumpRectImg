@@ -54,32 +54,6 @@ class elasWrapper : public Elas {
 
 public:
 
-	enum param_field {
-	  		disp_min,
-	  		disp_max,
-	  		support_threshold,
-	  		support_texture,
-	  		candidate_stepsize,
-	  		incon_window_size,
-	  		incon_threshold,
-	  		incon_min_support,
-	  		add_corners,
-	  		grid_size,
-	  		beta,
-	  		gamma,
-	  		sigma,
-	  		sradius,
-	  		match_texture,
-	  		lr_threshold,
-	  		speckle_size,
-	  		speckle_sim_threshold,
-	  		ipol_gap_width,
-	  		filter_median,
-	  		filter_adaptive_mean,
-	  		postprocess_only_left,
-	  		subsampling
-	};
-
 	int64 workBegin();
 	double workEnd(int64 work_begin);
     
@@ -88,164 +62,53 @@ public:
 
 	double compute_disparity(cv::Mat &imL, cv::Mat &imR, cv::Mat &dispL, int num_disparities);
 
-	template <typename T>
-	T get_param(param_field param_name)
-	{
-		switch (param_name) {
-		case add_corners:
-			return param.add_corners;
-			break;
-		case filter_median:
-			return param.filter_median;
-			break;
-		case filter_adaptive_mean:
-			return param.filter_adaptive_mean;
-			break;
-		case postprocess_only_left:
-			return param.postprocess_only_left;
-			break;
-		case subsampling:
-			return param.subsampling;
-			break;
-		case disp_min:
-			return param.disp_min;
-			break;
-		case disp_max:
-			return param.disp_max;
-			break;
-		case support_texture:
-			return param.support_texture;
-			break;
-		case candidate_stepsize:
-			return param.candidate_stepsize;
-			break;
-		case incon_window_size:
-			return param.incon_window_size;
-			break;
-		case incon_threshold:
-			return param.incon_threshold;
-			break;
-		case incon_min_support:
-			return param.incon_min_support;
-			break;
-		case grid_size:
-			return param.grid_size;
-			break;
-		case match_texture:
-			return param.match_texture;
-			break;
-		case lr_threshold:
-			return param.lr_threshold;
-			break;
-		case speckle_size:
-			return param.speckle_size;
-			break;
-		case ipol_gap_width:
-			return param.ipol_gap_width;
-			break;
-		case support_threshold:
-			return param.support_threshold;
-			break;
-		case beta:
-			return param.beta;
-			break;
-		case gamma:
-			return param.gamma;
-			break;
-		case sigma:
-			return param.sigma;
-			break;
-		case sradius:
-			return param.sradius;
-			break;
-		case speckle_sim_threshold:
-			return param.speckle_sim_threshold;
-			break;
-		default:
-			std::cout << "param_set failed: " << param_name << std::endl;
-			return 0;
-			break;
-		};
-	}
+	int get_disp_min();
+	int get_disp_max();
+	float get_support_threshold();
+	int get_support_texture();
+	int get_candidate_stepsize();
+	int get_incon_window_size();
+	int get_incon_threshold();
+	int get_incon_min_support();
+	bool get_add_corners();
+	int get_grid_size();
+	float get_beta();
+	float get_gamma();
+	float get_sigma();
+	float get_sradius();
+	int get_match_texture();
+	int get_lr_threshold();
+	float get_speckle_sim_threshold();
+	int get_speckle_size();
+	int get_ipol_gap_width();
+	bool get_filter_median();
+	bool get_filter_adaptive_mean();
+	bool get_postprocess_only_left();
+	bool get_subsampling();
 
-	template <typename T>
-	void set_param(param_field param_name, T param_value)
-	{
-		switch (param_name) {
-		case add_corners:
-			param.add_corners = param_value;
-			break;
-		case filter_median:
-			param.filter_median  = param_value;;
-			break;
-		case filter_adaptive_mean:
-			param.filter_adaptive_mean = param_value;
-			break;
-		case postprocess_only_left:
-			param.postprocess_only_left = param_value;
-			break;
-		case subsampling:
-			param.subsampling = param_value;
-			break;
-		case disp_min:
-			param.disp_min = param_value;
-			break;
-		case disp_max:
-			param.disp_max = param_value;
-			break;
-		case support_texture:
-			param.support_texture = param_value;
-			break;
-		case candidate_stepsize:
-			param.candidate_stepsize = param_value;
-			break;
-		case incon_window_size:
-			param.incon_window_size = param_value;
-			break;
-		case incon_threshold:
-			param.incon_threshold = param_value;
-			break;
-		case incon_min_support:
-			param.incon_min_support = param_value;
-			break;
-		case grid_size:
-			param.grid_size = param_value;
-			break;
-		case match_texture:
-			param.match_texture = param_value;
-			break;
-		case lr_threshold:
-			param.lr_threshold = param_value;
-			break;
-		case speckle_size:
-			param.speckle_size = param_value;
-			break;
-		case ipol_gap_width:
-			param.ipol_gap_width = param_value;
-			break;
-		case support_threshold:
-			param.support_threshold = param_value;
-			break;
-		case beta:
-			param.beta = param_value;
-			break;
-		case gamma:
-			param.gamma = param_value;
-			break;
-		case sigma:
-			param.sigma = param_value;
-			break;
-		case sradius:
-			param.sradius = param_value;
-			break;
-		case speckle_sim_threshold:
-			param.speckle_sim_threshold = param_value;
-			break;
-		default:
-			break;
-		};
-	}
-
+	void set_disp_min(int param_value);
+	void set_disp_max(int param_value);
+	void set_support_threshold(float param_value);
+	void set_support_texture(int param_value);
+	void set_candidate_stepsize(int param_value);
+	void set_incon_window_size(int param_value);
+	void set_incon_threshold(int param_value);
+	void set_incon_min_support(int param_value);
+	void set_add_corners(bool param_value);
+	void set_grid_size(int param_value);
+	void set_beta(float param_value);
+	void set_gamma(float param_value);
+	void set_sigma(float param_value);
+	void set_sradius(float param_value);
+	void set_match_texture(int param_value);
+	void set_lr_threshold(int param_value);
+	void set_speckle_sim_threshold(float param_value);
+	void set_speckle_size(int param_value);
+	void set_ipol_gap_width(int param_value);
+	void set_filter_median(bool param_value);
+	void set_filter_adaptive_mean(bool param_value);
+	void set_postprocess_only_left(bool param_value);
+	void set_subsampling(bool param_value);
 };
 
 #endif /* ELASWRAPPER_H_ */
